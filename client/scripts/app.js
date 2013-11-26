@@ -23,11 +23,14 @@ $(document).ready(function(){
       });
     }
   };
-  
+
   var textSet = function(messageObj) {
     for (var i = 0; i < 11; i++) {
-      if (roomName){
-        if (messageObj[i] && messageObj[i].text.length < 150){
+      if (roomName && messageObj[i]){
+        if (messageObj[i].text == undefined || messageObj[i].text == ""){
+          messageObj[i].text = "I'm too dumb to write anything";
+        }
+        if (messageObj[i].text.length < 150){
           $('#chat').prepend("<div class='message'>" + escapeHTML(messageObj[i].username) + ": " + escapeHTML(messageObj[i].text) + "</div>");
         }
       }
@@ -39,10 +42,13 @@ $(document).ready(function(){
     url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
 	  type: 'GET',
 	  success: function (data) {
+      var messageList;
       if (roomName !== 'lobby'){
-        var messageList = $.grep(data.results, function (element, index){
+        messageList = $.grep(data.results, function (element, index){
           return element.roomname === roomName;
         })
+      } else {
+        messageList = data.results;
       }
     textSet(messageList);
     console.log(data);
@@ -96,14 +102,17 @@ $('#refreshRoomsButton').on('click', function (event) {
 $('#roomlist').change(function (event){
   var selected = $(this).find('option:selected');
   roomName = selected.text();
-  console.log(roomName);
+  $('#room').text("Room: " + roomName);
 });
 
 $('#refreshButton').on('click', function (event) {
 	$.ajax(getRequest);
-
 	//TODO
 });
+
+// document.getElementsByClassName('message')
+  
+// });
 
 $('#sendButton').click(function (event) {
 	var input = $('#inputBox').val()
