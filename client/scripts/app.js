@@ -1,16 +1,32 @@
 $(document).ready(function(){
-  var textSet = function(messageObj) {
-    for (var i = 0; i < 11; i++) {
-      for (var j = 0; j < messageObj[i].text.length; j++){
-        if (messageObj[i].text[j] == '<') {
-          alert("Everyone's equal here");
-          i++;
+  // Set username and room
+  var userName, roomName;
+  
+  var setUser = function(){
+    userName = escapeHTML(prompt("What's your name, user?"));
+  };
 
-        }
-      }
-      $('#chat').append("<div class='message'>" + messageObj[i].username + ": " + messageObj[i].text + "</div>");
+  var setRoom = function(){
+    roomName = prompt("Choose a room");
+    if (roomName == "") {
+      roomName = "Default";
     }
   };
+
+  var escapeHTML = function (text) {
+    var replacements = {"<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"};
+    return text.replace(/[<>"']/g, function (character) {
+      return replacements[character];
+    });
+  };
+  
+  var textSet = function(messageObj) {
+    for (var i = 0; i < 11; i++) {
+      $('#chat').prepend("<div class='message'>" + escapeHTML(messageObj[i].username) + ": " + escapeHTML(messageObj[i].text) + "</div>");
+    }
+  };
+  
+  // GET and POST object formation
   var getRequest = {
     url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
 	  type: 'GET',
@@ -37,6 +53,7 @@ $(document).ready(function(){
   	}
   };
 
+// Click Handlers
 $('#refreshButton').on('click', function (event) {
 	$.ajax(getRequest);
   //Escaping
@@ -47,8 +64,8 @@ $('#refreshButton').on('click', function (event) {
 $('#sendButton').click(function (event) {
 	var input = $('#inputBox').val()
 	var messageObj = {
-		roomname: "nothing",
-		username: "nobody",
+		roomname: roomName,
+		username: userName,
 		text: input
 	};
 
@@ -62,5 +79,6 @@ $('#sendButton').click(function (event) {
   }
 
 });
-
+  setUser();
+  setRoom();
 });

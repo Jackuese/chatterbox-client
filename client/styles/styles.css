@@ -35,7 +35,7 @@ body {
     border: solid #FF0000;
 }
 
-#sendButton {
+.button {
     border: solid #FF0000;
     background: black;
     color: white;
