@@ -1,6 +1,7 @@
 $(document).ready(function(){
   // Set username and room
-  var userName, roomName;
+  var userName;
+  var roomName = "lobby";
   var roomOptions = {};
 
   var setUser = function(){
@@ -13,7 +14,7 @@ $(document).ready(function(){
   //     roomName = "Default";
   //   }
   // };
-
+// Escaping function, apply during appending any text
   var escapeHTML = function (text) {
     var replacements = {"<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;"};
     if (text){
@@ -25,8 +26,10 @@ $(document).ready(function(){
   
   var textSet = function(messageObj) {
     for (var i = 0; i < 11; i++) {
-      if (messageObj[i].username.length < 100 && messageObj[i].text.length < 150){
-        $('#chat').prepend("<div class='message'>" + escapeHTML(messageObj[i].username) + ": " + escapeHTML(messageObj[i].text) + "</div>");
+      if (roomName){
+        if (messageObj[i] && messageObj[i].text.length < 150){
+          $('#chat').prepend("<div class='message'>" + escapeHTML(messageObj[i].username) + ": " + escapeHTML(messageObj[i].text) + "</div>");
+        }
       }
     }
   };
@@ -35,9 +38,14 @@ $(document).ready(function(){
   var getRequest = {
     url: 'https://api.parse.com/1/classes/chatterbox?order=-createdAt',
 	  type: 'GET',
-	  success: function (data) { 
-      textSet(data.results);
-      console.log(data);
+	  success: function (data) {
+      if (roomName !== 'lobby'){
+        var messageList = $.grep(data.results, function (element, index){
+          return element.roomname === roomName;
+        })
+      }
+    textSet(messageList);
+    console.log(data);
 	  },
 	  error: function (data){
 		  console.log("error occurred");
@@ -79,20 +87,21 @@ $(document).ready(function(){
 // Click Handlers
 $('#refreshRoomsButton').on('click', function (event) {
   $.ajax(getRoomsRequest);
-  var mySelect = $('#roomlist');
+  var myRoom = $('#roomlist');
   $.each(Object.keys(roomOptions), function(val, text) {
-    mySelect.append($('<option></option>').val(val).html(text));
+    myRoom.append($('<option></option>').val(val).html(escapeHTML(text)));
   });
 });
 
-// Select box needs to get the text, not the values, but using the .text method adds each name onto the roomName var. 
 $('#roomlist').change(function (event){
-  roomName = $('#roomlist').val();
+  var selected = $(this).find('option:selected');
+  roomName = selected.text();
   console.log(roomName);
 });
 
 $('#refreshButton').on('click', function (event) {
 	$.ajax(getRequest);
+
 	//TODO
 });
 
